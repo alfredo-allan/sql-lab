@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SQL Lab Unidade II</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Laboratório interativo de SQL Server para a Unidade II de Modelagem de Banco de Dados Relacional e NoSQL (UNIP).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/api.css">
+
+</head>
+<body>
+<!-- ================= NAVEGAÇÃO ================= -->
+<header class="lab-nav">
+  <nav class="navbar navbar-expand-xl wrap">
+    <a class="brand me-3" href="#home" data-view="home">
+      <span class="brand-mark">&gt;_</span>
+      <span><span class="brand-name d-block">SQL Lab</span><span class="brand-sub">Unidade II · SQL Server</span></span>
+    </a>
+    <div class="d-flex align-items-center gap-2 order-xl-3 ms-auto">
+      <span id="txPill" class="tx-pill" hidden title="Há uma transação aberta">TRAN aberta</span>
+      <button class="icon-btn" id="btnTheme" type="button" title="Alternar tema claro/escuro" aria-label="Alternar tema"><span id="themeIcon">◐</span></button>
+      <div class="dropdown">
+        <button class="icon-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu do banco">Banco ▾</button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><h6 class="dropdown-header">Esquema (Aula 4)</h6></li>
+          <li><button class="dropdown-item" type="button" data-action="download">Baixar para SSMS / DBeaver…</button></li>
+          <li><button class="dropdown-item" type="button" id="mExport">Gerar script (DDL / dados)…</button></li>
+          <li><button class="dropdown-item" type="button" id="mImport">Importar arquivo .sql…</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item" type="button" id="mReset">Restaurar banco original…</button></li>
+        </ul>
+      </div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menu"><span class="navbar-toggler-icon"></span></button>
+    </div>
+    <div class="collapse navbar-collapse order-xl-2" id="navMain">
+      <ul class="navbar-nav lab-tabs gap-xl-1 mt-2 mt-xl-0">
+        <li class="nav-item"><a class="nav-link active" href="#home" data-view="home">Início</a></li>
+        <li class="nav-item"><a class="nav-link" href="#tutorial" data-view="tutorial">Tutorial <span class="count" id="navTut">0/11</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#terminal" data-view="terminal">Terminal</a></li>
+        <li class="nav-item"><a class="nav-link" href="#api" data-view="api">API ao vivo</a></li>
+        <li class="nav-item"><a class="nav-link" href="#missoes" data-view="missoes">Missões <span class="count" id="navMissions">0/0</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#bugs" data-view="bugs">Bug Lab</a></li>
+        <li class="nav-item"><a class="nav-link" href="#quiz" data-view="quiz">Quiz</a></li>
+        <li class="nav-item"><a class="nav-link" href="#der" data-view="der">DER</a></li>
+        <li class="nav-item"><a class="nav-link" href="#referencia" data-view="referencia">Referência</a></li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div id="loading" class="loading">Carregando o motor SQL…</div>
+
+  <!-- ================= INÍCIO (GSAP) ================= -->
+  <section id="view-home" class="view home" hidden>
+    <div class="home-hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Modelagem de Banco de Dados Relacional e NoSQL · UNIP · Unidade II</div>
+        <h1 class="hero-title" id="heroTitle">SQL é a língua que você usa para <em>conversar</em> com um banco de dados.</h1>
+        <p class="hero-lede">Você descreve <b>o que</b> quer; o banco decide <b>como</b> buscar. Aqui você aprende isso na prática, num SQL Server simulado dentro do navegador: nada para instalar e nada que você possa quebrar.</p>
+        <div class="d-flex flex-wrap gap-2 hero-cta">
+          <button class="btn-lab btn-lg-lab" type="button" data-view="tutorial">Começar o tutorial →</button>
+          <button class="btn-ghost btn-lg-lab" type="button" data-view="terminal">Ir direto ao terminal</button>
+        </div>
+        <dl class="hero-counts">
+          <div><dt>tabelas no banco</dt><dd data-count="7">7</dd></div>
+          <div><dt>lições no tutorial</dt><dd data-count="11">11</dd></div>
+          <div><dt>missões corrigidas</dt><dd data-count="27">27</dd></div>
+          <div><dt>bugs clássicos</dt><dd data-count="12">12</dd></div>
+        </dl>
+      </div>
+
+      <!-- Teatro da consulta -->
+      <div class="qt" id="queryTheater">
+        <div class="qt-bar">
+          <span class="qt-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="qt-title">veja uma consulta acontecer</span>
+        </div>
+        <div class="qt-scenes" role="tablist" aria-label="Escolha um comando" id="qtScenes"></div>
+        <div class="qt-query mono" id="qtQuery" aria-live="polite"></div>
+        <div class="qt-caption" id="qtCaption"><b>Escolha um comando</b> e aperte reproduzir.</div>
+        <div class="qt-table" id="qtTable" aria-label="Tabela Funcionario"></div>
+        <div class="qt-foot">
+          <div class="qt-steps" id="qtSteps" aria-hidden="true"></div>
+          <div class="d-flex gap-2">
+            <button class="tbtn" type="button" id="qtReset" title="Recomeçar">↺</button>
+            <button class="tbtn" type="button" id="qtStep">passo a passo →</button>
+            <button class="tbtn run" type="button" id="qtPlay">▶ reproduzir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kw-marquee" aria-hidden="true"><div class="kw-track" id="kwTrack"></div></div>
+
+    <!-- Relacional em 30 segundos -->
+    <div class="home-sec" id="hRelacional">
+      <div class="sec-head">
+        <div class="eyebrow">Conceito 1 · o modelo relacional</div>
+        <h2>Tabelas que se relacionam por chaves</h2>
+        <p class="lede">Cada tabela guarda um assunto. As linhas são os registros; as colunas, os atributos. A <b class="pk-t">chave primária</b> identifica cada linha, e a <b class="fk-t">chave estrangeira</b> aponta para a linha de outra tabela.</p>
+      </div>
+      <div class="rel-wrap">
+        <div class="rel-legend">
+          <div class="rel-term"><span class="rel-k">Tabela</span><span>um assunto: Cliente, Pedido, Produto.</span></div>
+          <div class="rel-term"><span class="rel-k">Linha</span><span>um registro: um cliente específico.</span></div>
+          <div class="rel-term"><span class="rel-k">Coluna</span><span>um atributo com tipo: nome NVARCHAR(100).</span></div>
+          <div class="rel-term"><span class="rel-k pk-t">PK</span><span>valor único que identifica a linha.</span></div>
+          <div class="rel-term"><span class="rel-k fk-t">FK</span><span>valor que precisa existir na PK de outra tabela.</span></div>
+          <p class="rel-hint" id="relHint">Passe o mouse ou toque em um cliente para ver os pedidos dele.</p>
+        </div>
+        <div class="rel-stage" id="relStage">
+          <svg class="rel-svg" id="relSvg" aria-hidden="true"></svg>
+          <div class="mini" id="miniCliente">
+            <div class="mini-name">Cliente</div>
+            <div class="mini-row head"><span class="pk-t">PK id_cliente</span><span>nome</span></div>
+          </div>
+          <div class="mini" id="miniPedido">
+            <div class="mini-name">Pedido</div>
+            <div class="mini-row head"><span class="pk-t">PK id_pedido</span><span class="fk-t">FK id_cliente</span><span>status</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 famílias -->
+    <div class="home-sec" id="hFamilias">
+      <div class="sec-head">
+        <div class="eyebrow">Conceito 2 · os subconjuntos da linguagem</div>
+        <h2>Cinco famílias de comandos</h2>
+        <p class="lede">Todo comando SQL pertence a uma família. A cor de cada uma é a mesma que você vai ver no terminal. Clique para ver um exemplo.</p>
+      </div>
+      <div class="fam-grid" id="famGrid"></div>
+    </div>
+
+    <!-- Caminho -->
+    <div class="home-sec" id="hCaminho">
+      <div class="sec-head">
+        <div class="eyebrow">Como usar o laboratório</div>
+        <h2>Um caminho em cinco paradas</h2>
+        <p class="lede">Siga na ordem se estiver começando. Se já conhece SQL, pule para as missões.</p>
+      </div>
+      <ol class="path" id="pathList">
+        <li><button type="button" data-view="tutorial"><span class="path-n">1</span><b>Tutorial</b><span>11 lições curtas, cada uma com SQL que você executa ali mesmo.</span></button></li>
+        <li><button type="button" data-view="terminal"><span class="path-n">2</span><b>Terminal</b><span>Escreva livremente. O Raio-X explica cada cláusula e aponta erros de lógica.</span></button></li>
+        <li><button type="button" data-view="missoes"><span class="path-n">3</span><b>Missões</b><span>27 exercícios das Aulas 1 a 4 com correção automática.</span></button></li>
+        <li><button type="button" data-view="bugs"><span class="path-n">4</span><b>Bug Lab</b><span>Os erros que mais caem em prova, com causa e correção.</span></button></li>
+        <li><button type="button" data-view="quiz"><span class="path-n">5</span><b>Quiz</b><span>16 questões no modelo UNIP para fechar a unidade.</span></button></li>
+      </ol>
+    </div>
+
+    <div class="home-sec" id="hFerramentas">
+      <div class="dl-band">
+        <div class="dl-band-copy">
+          <div class="eyebrow">Leve o banco com você</div>
+          <h2>Abra este mesmo banco no SSMS, no DBeaver ou no Azure Data Studio</h2>
+          <p class="lede">Baixe o script T-SQL para um SQL Server de verdade ou o arquivo SQLite que abre direto no DBeaver, com diagrama ER das tabelas e chaves.</p>
+        </div>
+        <div class="dl-tools" aria-hidden="true">
+          <span class="dl-tool">SSMS</span><span class="dl-tool">DBeaver</span><span class="dl-tool">Azure Data Studio</span><span class="dl-tool">DB Browser for SQLite</span><span class="dl-tool">DataGrip</span>
+        </div>
+        <button class="btn-lab btn-lg-lab" type="button" data-action="download">Baixar arquivos do banco ↓</button>
+      </div>
+    </div>
+
+    <div class="home-final">
+      <h2>Pronto para a primeira consulta?</h2>
+      <p>O tutorial leva uns 20 minutos e termina com você escrevendo JOINs.</p>
+      <button class="btn-lab btn-lg-lab" type="button" data-view="tutorial">Começar o tutorial →</button>
+    </div>
+  </section>
+
+
+  <!-- ================= API AO VIVO ================= -->
+  <section id="view-api" class="view api" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Por que você estudou tudo isso?</div>
+        <h1 class="api-title">Todo clique num app vira uma chamada de <em>API</em>. Toda API termina em <em>SQL</em>.</h1>
+        <p class="lede">Preencha o formulário da tela à esquerda e envie. Acompanhe o pedido sair do navegador, passar pela API, virar SQL no banco e voltar como dados na tela. Ligue o <b>Raio-X</b> para ver o código por trás de cada camada.</p>
+      </div>
+    </div>
+
+    <div class="api-scenarios" id="apiScenarios" role="tablist" aria-label="Cenários"></div>
+
+    <div class="api-stage" id="apiStage">
+      <svg class="api-wires" id="apiWires" aria-hidden="true"></svg>
+
+      <div class="api-node node-app" id="nodeApp">
+        <div class="node-label"><span class="layer-n">1</span><span><b>Tela</b> · front-end no navegador</span></div>
+        <div class="browser">
+          <div class="browser-bar">
+            <span class="b-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="b-url mono" id="appUrl">lojalab.app</span>
+            <button type="button" class="xray-btn" id="btnXray" aria-pressed="false">Raio-X</button>
+          </div>
+          <div class="browser-body">
+            <div class="app-ui" id="appUi"></div>
+            <div class="app-xray" id="appXray" aria-hidden="true"><div class="xray-tag">código desta tela</div><pre id="xrayCode"></pre></div>
+            <div class="scanline" id="scanline" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="api-node node-api" id="nodeApi">
+        <div class="node-label"><span class="layer-n">2</span><span><b>API</b> · back-end (Node + Express)</span></div>
+        <div class="srv">
+          <div class="srv-head mono"><span>server.js</span><span class="srv-status" id="apiStatus">aguardando</span></div>
+          <pre class="route" id="routeCode"></pre>
+        </div>
+      </div>
+
+      <div class="api-node node-db" id="nodeDb">
+        <div class="node-label"><span class="layer-n">3</span><span><b>Banco</b> · SQL Server LabUnidade2</span></div>
+        <div class="dbbox">
+          <div class="db-head">
+            <svg class="db-cyl" id="dbCyl" viewBox="0 0 48 56" aria-hidden="true"><ellipse cx="24" cy="10" rx="20" ry="7"/><path d="M4 10v36c0 4 9 7 20 7s20-3 20-7V10"/><path d="M4 22c0 4 9 7 20 7s20-3 20-7M4 34c0 4 9 7 20 7s20-3 20-7" fill="none"/></svg>
+            <div><div class="mono small" id="dbState">ocioso</div><div class="db-meta mono" id="dbMeta"></div></div>
+          </div>
+          <pre class="db-sql" id="dbSql">-- o SQL enviado pela API aparece aqui</pre>
+          <div class="db-result" id="dbResult"></div>
+        </div>
+      </div>
+
+      <div class="packet" id="packet" aria-hidden="true"><span class="pk-m" id="pkM"></span><span class="pk-t" id="pkT"></span></div>
+    </div>
+
+    <div class="api-controls">
+      <div class="seg" role="group" aria-label="Velocidade">
+        <span class="small text-muted-2">velocidade</span>
+        <button type="button" data-speed="0.5">0,5×</button><button type="button" data-speed="1" class="on">1×</button><button type="button" data-speed="2">2×</button>
+      </div>
+      <label class="d-flex gap-2 align-items-center small"><input type="checkbox" id="apiPause"> pausar em cada camada</label>
+      <button type="button" class="btn-lab btn-sm-lab" id="apiContinue" hidden>Continuar ▶</button>
+      <span class="ms-auto small text-muted-2">Tudo roda no navegador: a API é simulada e o banco é uma cópia do laboratório.</span>
+      <button type="button" class="btn-ghost btn-sm-lab" id="apiResetData">Restaurar dados da API</button>
+    </div>
+
+    <div class="row g-3 mt-1">
+      <div class="col-xl-8" style="min-width:0">
+        <div class="panel">
+          <div class="panel-head"><h2>Raio-X da requisição</h2><span class="eyebrow">clique em uma etapa</span></div>
+          <div class="insp-tabs" id="inspTabs" role="tablist"></div>
+          <div class="panel-body" id="inspBody"><p class="empty mb-0">Envie o formulário para ver cada etapa: a requisição HTTP, a rota da API, o SQL, o resultado do banco, a resposta e a tela atualizada.</p></div>
+        </div>
+      </div>
+      <div class="col-xl-4" style="min-width:0">
+        <div class="panel h-100">
+          <div class="panel-head"><h2>Rede</h2><span class="eyebrow">como a aba Network do DevTools</span></div>
+          <div class="panel-body net" id="netLog"><p class="empty mb-0">Nenhuma requisição ainda.</p></div>
+          <div class="net-legend small text-muted-2"><span><i style="background:var(--c-dql)"></i>rede</span><span><i style="background:var(--c-ddl)"></i>API</span><span><i style="background:var(--c-dml)"></i>banco</span><span>tempos de rede simulados</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-lesson" id="apiLesson" hidden></div>
+
+    <div class="home-sec">
+      <div class="sec-head">
+        <div class="eyebrow">O mapa que liga tudo</div>
+        <h2>Formulário → HTTP → SQL</h2>
+        <p class="lede">Cada ação de uma tela corresponde a um método HTTP, que a API traduz em um comando SQL. É por isso que DML e DQL aparecem em todo sistema que você vai usar ou construir.</p>
+      </div>
+      <div class="tbl-wrap"><table class="tbl crud-map">
+        <thead><tr><th>Ação na tela</th><th>Método HTTP</th><th>Comando SQL</th><th>Família</th><th>Respostas comuns</th></tr></thead>
+        <tbody>
+          <tr><td>Buscar, listar, filtrar</td><td><span class="http GET">GET</span></td><td><code>SELECT</code></td><td><span class="cat cat-DQL">DQL</span></td><td>200 OK · 404</td></tr>
+          <tr><td>Cadastrar</td><td><span class="http POST">POST</span></td><td><code>INSERT</code></td><td><span class="cat cat-DML">DML</span></td><td>201 Created · 400 · 409</td></tr>
+          <tr><td>Editar</td><td><span class="http PUT">PUT</span> / <span class="http PATCH">PATCH</span></td><td><code>UPDATE</code></td><td><span class="cat cat-DML">DML</span></td><td>200 OK · 404</td></tr>
+          <tr><td>Excluir</td><td><span class="http DELETE">DELETE</span></td><td><code>DELETE</code></td><td><span class="cat cat-DML">DML</span></td><td>204 No Content · 409</td></tr>
+          <tr><td>Operação com várias etapas</td><td><span class="http POST">POST</span></td><td><code>BEGIN TRAN … COMMIT</code></td><td><span class="cat cat-TCL">TCL</span></td><td>201 · 409 com ROLLBACK</td></tr>
+        </tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ================= TUTORIAL ================= -->
+  <section id="view-tutorial" class="view" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Antes do terminal · os comandos e o que eles fazem</div>
+        <h1>Tutorial: do SELECT ao JOIN</h1>
+        <p class="lede">Cada lição explica um comando, mostra o que ele faz e o que não faz, e traz exemplos que você executa ali mesmo. Os exemplos rodam numa cópia do banco, então pode testar à vontade.</p>
+      </div>
+      <div style="min-width:220px">
+        <div class="d-flex justify-content-between small mb-1"><span class="text-muted-2">Lições vistas</span><b id="tutProgTxt">0/11</b></div>
+        <div class="progress-lab"><div id="tutProgBar" style="width:0;background:var(--accent)"></div></div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-lg-3"><nav class="panel panel-body tut-rail" id="tutRail" aria-label="Lições do tutorial"></nav></div>
+      <div class="col-lg-9" style="min-width:0"><article class="panel tut-stage" id="tutStage"></article></div>
+    </div>
+  </section>
+
+  <!-- ================= TERMINAL ================= -->
+  <section id="view-terminal" class="view" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Banco LabUnidade2 · 7 tabelas · T-SQL simulado</div>
+        <h1>Escreva SQL, execute com <em>F5</em> e entenda cada cláusula.</h1>
+      </div>
+      <div class="stat-row" id="statRow"></div>
+    </div>
+
+    <div class="row g-3">
+      <!-- Explorador -->
+      <aside class="col-lg-3 d-none d-lg-block">
+        <div class="panel explorer-panel">
+          <div class="panel-head"><h2>Pesquisador de Objetos</h2></div>
+          <div class="panel-body explorer pt-1" id="explorer"></div>
+        </div>
+      </aside>
+
+      <!-- Terminal + Raio-X -->
+      <div class="col-lg-9 d-flex flex-column gap-3" style="min-width:0">
+        <div class="term">
+          <div class="term-bar">
+            <div class="term-title"><b>aluno@unip</b>: ~/unidade2 — sqlcmd LabUnidade2</div>
+            <div class="term-tools">
+              <button class="tbtn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#ocExplorer">Objetos</button>
+              <button class="tbtn" type="button" data-bs-toggle="offcanvas" data-bs-target="#ocSnippets">Biblioteca</button>
+              <label class="tswitch" title="Bloqueia UPDATE/DELETE sem WHERE"><input type="checkbox" id="safeMode" checked> modo seguro</label>
+              <button class="tbtn" type="button" id="btnClear">limpar</button>
+              <button class="tbtn" type="button" id="btnRunSel" title="Executa só o texto selecionado (como no SSMS)">seleção</button>
+              <button class="tbtn run" type="button" id="btnRun">▶ Executar <kbd>F5</kbd></button>
+            </div>
+          </div>
+          <div class="term-out" id="termOut" tabindex="0" aria-live="polite"></div>
+          <div class="term-in">
+            <div class="t-prompt1">┌──(<span class="u">aluno㉿unip</span>)-[<span class="p">~/unidade2</span>]<span id="promptTx" class="t-warn"></span></div>
+            <div class="term-in-row">
+              <span class="t-prompt2">└─<span class="d">$</span></span>
+              <div class="editor" id="termEditor"></div>
+            </div>
+            <div class="term-hint">
+              <span><!-- <kbd>F5</kbd>/ --><kbd>Ctrl</kbd>+<kbd>Enter</kbd> executar</span>
+              <span class="hide-sm"><kbd>Ctrl</kbd>+<kbd>↑</kbd><kbd>↓</kbd> histórico</span>
+              <span>digite <span class="t-info">help</span> para comandos do terminal</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Raio-X do comando</h2>
+            <span class="eyebrow">o que faz · o que não faz · alertas</span>
+          </div>
+          <div class="panel-body" id="xray">
+            <p class="empty mb-0">Execute um comando para ver a classificação (DDL, DML, DQL, DCL, TCL), a explicação de cada cláusula, a ordem lógica de processamento e os alertas de boas práticas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MISSÕES ================= -->
+  <section id="view-missoes" class="view" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Correção automática · o banco real não é alterado</div>
+        <h1>Missões das Aulas 1 a 4</h1>
+        <p class="lede">Cada missão roda numa cópia do banco. Consultas são comparadas com o gabarito; comandos DDL e DML são verificados pelo efeito que produzem.</p>
+      </div>
+      <div style="min-width:220px">
+        <div class="d-flex justify-content-between small mb-1"><span class="text-muted-2">Progresso</span><b id="mProgTxt">0/0</b></div>
+        <div class="progress-lab"><div id="mProgBar" style="width:0"></div></div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-lg-4"><div class="panel panel-body mission-list" id="missionList"></div></div>
+      <div class="col-lg-8" style="min-width:0"><div class="panel panel-body" id="missionDetail"></div></div>
+    </div>
+  </section>
+
+  <!-- ================= BUG LAB ================= -->
+  <section id="view-bugs" class="view" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Erro clássico → sintoma → causa → correção</div>
+        <h1>Bug Lab</h1>
+        <p class="lede">Os erros que mais aparecem em prova e em produção. Rode o bug no terminal, leia a mensagem no estilo do SQL Server e depois rode a correção.</p>
+      </div>
+    </div>
+    <div class="bug-grid" id="bugGrid"></div>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section id="view-quiz" class="view" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Modelo de prova UNIP</div>
+        <h1>Quiz da Unidade II</h1>
+        <p class="lede">Questões das aulas e do checklist de revisão, com justificativa após cada resposta.</p>
+      </div>
+    </div>
+    <div class="quiz panel panel-body" id="quizBox"></div>
+  </section>
+
+  <!-- ================= DER ================= -->
+  <section id="view-der" class="view" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Modelagem direta · documentação viva</div>
+        <h1>Diagrama do banco</h1>
+        <p class="lede">Gerado a partir do esquema físico, como o diagrama do SSMS: crie uma tabela com FOREIGN KEY no terminal e ela aparece aqui.</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap"><button class="btn-ghost" type="button" id="btnDerRefresh">Atualizar</button><button class="btn-lab" type="button" data-action="download">Ver no DBeaver / SSMS ↓</button></div>
+    </div>
+    <div class="der-wrap" id="derWrap"></div>
+    <div class="d-flex flex-wrap gap-3 mt-2 small text-muted-2">
+      <span><b style="color:var(--exam)">PK</b> chave primária</span>
+      <span><b style="color:var(--accent)">FK</b> chave estrangeira</span>
+      <span>linha = relacionamento 1:N, com a regra ON DELETE no rótulo</span>
+    </div>
+  </section>
+
+  <!-- ================= REFERÊNCIA ================= -->
+  <section id="view-referencia" class="view" hidden>
+    <div class="hero-strip">
+      <div>
+        <div class="eyebrow">Resumo da Unidade II</div>
+        <h1>Referência rápida</h1>
+        <p class="lede">O conteúdo das aulas em formato de consulta. Os exemplos com botão rodam direto no terminal.</p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-3">
+        <nav class="ref-nav" aria-label="Seções da referência">
+          <a href="#r-subconjuntos">Subconjuntos da SQL</a>
+          <a href="#r-tipos">Tipos de dados</a>
+          <a href="#r-restricoes">Restrições e cascata</a>
+          <a href="#r-ordem">Ordem lógica do SELECT</a>
+          <a href="#r-filtros">Filtros e conjuntos</a>
+          <a href="#r-where-having">WHERE × HAVING</a>
+          <a href="#r-joins">JOINs</a>
+          <a href="#r-sub">Subconsultas e procedures</a>
+          <a href="#r-ferramentas">SSMS × Azure Data Studio</a>
+          <a href="#r-compat">Compatibilidade do simulador</a>
+          <a href="#r-checklist">Checklist de prova</a>
+        </nav>
+      </div>
+      <div class="col-lg-9 d-grid gap-5" style="min-width:0">
+
+        <div class="ref-section" id="r-subconjuntos">
+          <h2>Os 5 subconjuntos da SQL</h2>
+          <p class="lede mb-3">A cor de cada subconjunto é a mesma usada no terminal e no Raio-X.</p>
+          <div class="subset-grid">
+            <div class="subset" style="--c:var(--c-ddl)"><h3>DDL</h3><div class="full">Data Definition Language</div><p class="small mb-0 mt-1">Define a estrutura dos objetos.</p><div class="cmds">CREATE · ALTER · DROP · TRUNCATE</div></div>
+            <div class="subset" style="--c:var(--c-dml)"><h3>DML</h3><div class="full">Data Manipulation Language</div><p class="small mb-0 mt-1">Manipula os dados das tabelas.</p><div class="cmds">INSERT · UPDATE · DELETE</div></div>
+            <div class="subset" style="--c:var(--c-dql)"><h3>DQL</h3><div class="full">Data Query Language</div><p class="small mb-0 mt-1">Consulta e extrai dados.</p><div class="cmds">SELECT</div></div>
+            <div class="subset" style="--c:var(--c-dcl)"><h3>DCL</h3><div class="full">Data Control Language</div><p class="small mb-0 mt-1">Controla permissões.</p><div class="cmds">GRANT · REVOKE · DENY</div></div>
+            <div class="subset" style="--c:var(--c-tcl)"><h3>DTL/TCL</h3><div class="full">Transaction Control</div><p class="small mb-0 mt-1">Controla transações.</p><div class="cmds">BEGIN TRAN · COMMIT · ROLLBACK</div></div>
+          </div>
+          <div class="exam mt-3"><div class="eyebrow">Ponto de prova</div><code>CREATE</code> e <code>ALTER TABLE</code> são DDL; <code>INSERT</code>, <code>UPDATE</code> e <code>DELETE</code> são DML; <code>SELECT</code> é estritamente DQL.</div>
+        </div>
+
+        <div class="ref-section" id="r-tipos">
+          <h2>Tipos de dados no SQL Server</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Grupo</th><th>Tipos</th><th>Quando usar</th></tr></thead>
+            <tbody>
+              <tr><td>Numérico exato</td><td><code>INT</code> <code>BIGINT</code> <code>DECIMAL(p,s)</code> <code>NUMERIC(p,s)</code></td><td>Identificadores, quantidades e <b>valores monetários</b>. DECIMAL(10,2) = 10 dígitos, 2 após a vírgula.</td></tr>
+              <tr><td>Numérico aproximado</td><td><code>FLOAT</code> <code>REAL</code></td><td>Medidas científicas. <b>Nunca</b> para dinheiro: erro de arredondamento binário.</td></tr>
+              <tr><td>Texto</td><td><code>CHAR(n)</code> <code>VARCHAR(n)</code> <code>NVARCHAR(n)</code></td><td>CHAR tem tamanho fixo (UF, CNPJ). VARCHAR é variável. NVARCHAR guarda Unicode (acentos, outros alfabetos).</td></tr>
+              <tr><td>Data e hora</td><td><code>DATE</code> <code>TIME</code> <code>DATETIME2</code></td><td>DATE só data; TIME só hora; DATETIME2 data e hora com alta precisão.</td></tr>
+              <tr><td>Outros</td><td><code>BIT</code> <code>VARBINARY</code> <code>UNIQUEIDENTIFIER</code></td><td>Booleano (0/1), binários e GUIDs.</td></tr>
+            </tbody></table></div>
+          <div class="d-flex gap-2 mt-2 flex-wrap"><button class="btn-ghost btn-sm-lab" data-run="SELECT CASE WHEN CAST(0.1 AS FLOAT) + CAST(0.2 AS FLOAT) = 0.3 THEN 'igual' ELSE 'DIFERENTE' END AS teste_float;">▶ Testar o problema do FLOAT</button></div>
+        </div>
+
+        <div class="ref-section" id="r-restricoes">
+          <h2>Restrições de integridade e ações em cascata</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Restrição</th><th>Garante que…</th><th>Exemplo no banco do lab</th></tr></thead>
+            <tbody>
+              <tr><td><code>PRIMARY KEY</code></td><td>cada linha é única e identificável (não nula).</td><td>Cliente.id_cliente</td></tr>
+              <tr><td><code>FOREIGN KEY</code></td><td>o valor existe na tabela pai: sem registros órfãos.</td><td>Pedido.id_cliente → Cliente</td></tr>
+              <tr><td><code>NOT NULL</code></td><td>a coluna sempre tem valor.</td><td>Funcionario.nome</td></tr>
+              <tr><td><code>UNIQUE</code></td><td>não há valores repetidos (sem ser a PK).</td><td>Cliente.email</td></tr>
+              <tr><td><code>CHECK</code></td><td>uma condição lógica é respeitada.</td><td>Produto.preco &gt; 0</td></tr>
+              <tr><td><code>DEFAULT</code></td><td>um valor padrão é usado quando a coluna é omitida.</td><td>Pedido.status = 'Aberto'</td></tr>
+            </tbody></table></div>
+          <div class="tbl-wrap mt-3"><table class="tbl">
+            <thead><tr><th>ON DELETE</th><th>Ao excluir o pai…</th><th>No lab</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><code>CASCADE</code></td><td>os filhos são excluídos junto.</td><td>Pedido → ItemPedido</td><td><button class="btn-ghost btn-sm-lab" data-run="BEGIN TRANSACTION;&#10;SELECT COUNT(*) AS itens_antes FROM ItemPedido WHERE id_pedido = 1;&#10;DELETE FROM Pedido WHERE id_pedido = 1;&#10;SELECT COUNT(*) AS itens_depois FROM ItemPedido WHERE id_pedido = 1;&#10;ROLLBACK;">▶ ver</button></td></tr>
+              <tr><td><code>SET NULL</code></td><td>a FK dos filhos vira NULL.</td><td>Departamento → Funcionario</td><td><button class="btn-ghost btn-sm-lab" data-run="BEGIN TRANSACTION;&#10;DELETE FROM Departamento WHERE id_departamento = 5;&#10;SELECT nome, id_departamento FROM Funcionario WHERE nome IN ('Larissa Rocha','Marcos Vieira');&#10;ROLLBACK;">▶ ver</button></td></tr>
+              <tr><td><code>NO ACTION</code></td><td>a exclusão é bloqueada se houver filhos.</td><td>Produto → ItemPedido</td><td><button class="btn-ghost btn-sm-lab" data-run="DELETE FROM Produto WHERE id_produto = 1;">▶ ver</button></td></tr>
+            </tbody></table></div>
+        </div>
+
+        <div class="ref-section" id="r-ordem">
+          <h2>Ordem lógica de processamento do SELECT</h2>
+          <p class="lede mb-3">Você escreve SELECT primeiro, mas o servidor processa nesta ordem. Isso explica por que o alias do SELECT não existe no WHERE e por que agregação não cabe no WHERE.</p>
+          <div class="order-flow">
+            <span class="st">1 · FROM / JOIN<small>monta as linhas</small></span><span class="ar">→</span>
+            <span class="st">2 · WHERE<small>filtra linhas</small></span><span class="ar">→</span>
+            <span class="st">3 · GROUP BY<small>forma grupos</small></span><span class="ar">→</span>
+            <span class="st">4 · HAVING<small>filtra grupos</small></span><span class="ar">→</span>
+            <span class="st">5 · SELECT<small>projeta colunas</small></span><span class="ar">→</span>
+            <span class="st">6 · DISTINCT</span><span class="ar">→</span>
+            <span class="st">7 · ORDER BY<small>ordena</small></span><span class="ar">→</span>
+            <span class="st">8 · TOP</span>
+          </div>
+        </div>
+
+        <div class="ref-section" id="r-filtros">
+          <h2>Filtros e operações de conjunto</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Operador</th><th>O que faz</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><code>LIKE</code></td><td><code>%</code> = zero ou mais caracteres; <code>_</code> = exatamente um.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT nome FROM Funcionario WHERE nome LIKE 'J%';">▶</button></td></tr>
+              <tr><td><code>IN</code></td><td>pertinência a uma lista; substitui vários OR.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT nome, cargo FROM Funcionario WHERE cargo IN ('Analista','Gerente');">▶</button></td></tr>
+              <tr><td><code>BETWEEN</code></td><td>intervalo inclusivo (mínimo e máximo entram).</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT nome, salario FROM Funcionario WHERE salario BETWEEN 3000 AND 6000 ORDER BY salario;">▶</button></td></tr>
+              <tr><td><code>UNION</code></td><td>empilha resultados e remove duplicatas.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT nome, email FROM Cliente&#10;UNION&#10;SELECT nome, email FROM ClienteLegado;">▶</button></td></tr>
+              <tr><td><code>UNION ALL</code></td><td>empilha mantendo duplicatas (mais rápido).</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT nome, email FROM Cliente&#10;UNION ALL&#10;SELECT nome, email FROM ClienteLegado;">▶</button></td></tr>
+              <tr><td><code>INTERSECT</code></td><td>só o que está nas duas consultas.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT email FROM Cliente&#10;INTERSECT&#10;SELECT email FROM ClienteLegado;">▶</button></td></tr>
+              <tr><td><code>EXCEPT</code></td><td>o que está na 1ª e não está na 2ª.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT email FROM ClienteLegado&#10;EXCEPT&#10;SELECT email FROM Cliente;">▶</button></td></tr>
+            </tbody></table></div>
+          <div class="exam mt-3"><div class="eyebrow">Ponto de prova</div>Operações de conjunto exigem o mesmo número de colunas, com tipos compatíveis e na mesma ordem.</div>
+        </div>
+
+        <div class="ref-section" id="r-where-having">
+          <h2>WHERE × HAVING</h2>
+          <div class="row g-3">
+            <div class="col-md-6"><div class="xray-card h-100"><h4>WHERE</h4><p class="mb-1">Filtra <b>linhas individuais antes</b> do agrupamento.</p><p class="mb-0 text-muted-2">Não aceita SUM, AVG, COUNT, MAX, MIN.</p></div></div>
+            <div class="col-md-6"><div class="xray-card h-100"><h4>HAVING</h4><p class="mb-1">Filtra <b>grupos depois</b> do GROUP BY.</p><p class="mb-0 text-muted-2">É onde ficam as condições com agregação.</p></div></div>
+          </div>
+          <pre class="code mt-3">SELECT id_departamento, AVG(salario) AS Media_Salarial
+FROM Funcionario
+WHERE data_admissao &gt;= '2020-01-01'   -- filtra LINHAS antes do agrupamento
+GROUP BY id_departamento
+HAVING AVG(salario) &gt; 3000;          -- filtra os GRUPOS resultantes</pre>
+          <div class="exam mt-3"><div class="eyebrow">Ponto de prova</div>Toda coluna não agregada listada no SELECT precisa constar no GROUP BY (Msg 8120). O simulador reproduz esse erro.</div>
+        </div>
+
+        <div class="ref-section" id="r-joins">
+          <h2>Tipos de JOIN</h2>
+          <p class="lede mb-3">A = tabela da esquerda, B = tabela da direita. Clique para executar com Departamento (A) e Funcionario (B).</p>
+          <div class="joins" id="joinCards"></div>
+        </div>
+
+        <div class="ref-section" id="r-sub">
+          <h2>Subconsultas e Stored Procedures</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Tipo</th><th>Característica</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Simples</td><td>Executada uma vez; o resultado alimenta a consulta externa.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT nome, salario FROM Funcionario&#10;WHERE salario &gt; (SELECT AVG(salario) FROM Funcionario);">▶</button></td></tr>
+              <tr><td>Correlacionada</td><td>Referencia a consulta externa e é reavaliada linha a linha. Cuidado com desempenho.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT F.nome, F.id_departamento, F.salario&#10;FROM Funcionario F&#10;WHERE F.salario = (SELECT MAX(F2.salario) FROM Funcionario F2&#10;                   WHERE F2.id_departamento = F.id_departamento);">▶</button></td></tr>
+              <tr><td>Tabela derivada</td><td>Subconsulta no FROM, com alias, usada como tabela temporária.</td><td><button class="btn-ghost btn-sm-lab" data-run="SELECT AVG(T.total) AS ticket_medio&#10;FROM (SELECT id_pedido, SUM(quantidade * preco_unitario) AS total&#10;      FROM ItemPedido GROUP BY id_pedido) AS T;">▶</button></td></tr>
+            </tbody></table></div>
+          <div class="row g-3 mt-1">
+            <div class="col-md-4"><div class="xray-card h-100"><h4>Desempenho</h4>Reutiliza o plano de execução pré-compilado em memória.</div></div>
+            <div class="col-md-4"><div class="xray-card h-100"><h4>Segurança</h4><code>GRANT EXECUTE</code> na procedure sem dar acesso direto às tabelas.</div></div>
+            <div class="col-md-4"><div class="xray-card h-100"><h4>Manutenção</h4>A regra de negócio fica centralizada no servidor.</div></div>
+          </div>
+          <div class="d-flex gap-2 flex-wrap mt-3">
+            <button class="btn-ghost btn-sm-lab" data-run="sp_helptext sp_AtualizarSalario;">▶ Ver código de sp_AtualizarSalario</button>
+            <button class="btn-ghost btn-sm-lab" data-run="EXEC sp_PedidosDoCliente @id_cliente = 3;">▶ EXEC sp_PedidosDoCliente 3</button>
+          </div>
+        </div>
+
+        <div class="ref-section" id="r-ferramentas">
+          <h2>SSMS × Azure Data Studio</h2>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Aspecto</th><th>SSMS</th><th>Azure Data Studio</th></tr></thead>
+            <tbody>
+              <tr><td>Foco</td><td>Administração, segurança, ajuste do servidor</td><td>Análise, exploração e visualização</td></tr>
+              <tr><td>Modelagem visual</td><td>DER nativo, ligado ao esquema físico</td><td>Sem construtor de DER nativo</td></tr>
+              <tr><td>Análise</td><td>Resultados em grade/texto</td><td>Notebooks: SQL + Markdown + gráficos</td></tr>
+              <tr><td>Plataforma</td><td>Somente Windows</td><td>Windows, Linux e macOS</td></tr>
+            </tbody></table></div>
+          <p class="mt-3 mb-2"><b>Exportação de esquema:</b> o script DDL leva tabelas, chaves, índices e procedures <b>sem os dados</b>. Serve para levar da homologação à produção, versionar no Git e reconstruir o ambiente em recuperação de desastres. Na importação, as tabelas pai precisam ser criadas antes das filhas.</p>
+          <div class="d-flex gap-2 flex-wrap"><button class="btn-lab btn-sm-lab" type="button" data-action="download">Baixar para SSMS / DBeaver</button><button class="btn-ghost btn-sm-lab" type="button" data-action="export">Ver script deste banco</button></div>
+          <div class="exam mt-3"><div class="eyebrow">Ponto de prova</div>O SSMS não representa abstrações conceituais (herança/generalização): seu DER mostra apenas objetos físicos que existem no SGBD.</div>
+        </div>
+
+        <div class="ref-section" id="r-compat">
+          <h2>Compatibilidade do simulador</h2>
+          <p class="lede mb-3">O motor é SQLite rodando no navegador. Uma camada traduz a sintaxe T-SQL mais usada na disciplina e reproduz mensagens de erro do SQL Server.</p>
+          <div class="tbl-wrap"><table class="tbl">
+            <thead><tr><th>Você escreve (T-SQL)</th><th>Situação</th></tr></thead>
+            <tbody>
+              <tr><td><code>IDENTITY(1,1)</code>, <code>GETDATE()</code>, <code>TOP n</code>, <code>LEN</code>, <code>ISNULL</code>, <code>YEAR/MONTH/DAY</code>, <code>DATEDIFF</code>, <code>DATEADD</code>, <code>CHARINDEX</code>, <code>CONVERT</code>, <code>GO</code>, <code>N'texto'</code></td><td>Traduzido automaticamente</td></tr>
+              <tr><td><code>INNER / LEFT / RIGHT / FULL / CROSS JOIN</code>, <code>UNION</code>, <code>INTERSECT</code>, <code>EXCEPT</code>, subconsultas, <code>CASE</code>, <code>EXISTS</code>, views, índices</td><td>Nativo</td></tr>
+              <tr><td><code>BEGIN TRAN</code>, <code>COMMIT</code>, <code>ROLLBACK</code>, <code>SAVE TRAN</code></td><td>Nativo (sem transações aninhadas)</td></tr>
+              <tr><td><code>CREATE/ALTER/DROP PROCEDURE</code>, <code>EXEC</code>, <code>DECLARE</code>, <code>SET @var</code>, <code>PRINT</code></td><td>Simulado</td></tr>
+              <tr><td><code>GRANT</code>, <code>REVOKE</code>, <code>DENY</code>; <code>sp_help</code>, <code>sp_tables</code>, <code>sp_helptext</code>, <code>sp_helprotect</code>, <code>sp_stored_procedures</code></td><td>Simulado (usuário único)</td></tr>
+              <tr><td>Erro 8120 (coluna fora do GROUP BY), modo seguro para UPDATE/DELETE sem WHERE</td><td>Emulado para se comportar como o SQL Server</td></tr>
+              <tr><td><code>ALTER COLUMN</code>, <code>ADD CONSTRAINT</code>, <code>IF/WHILE</code>, <code>TRY/CATCH</code>, triggers T-SQL</td><td>Não suportado (mensagem explicativa)</td></tr>
+              <tr><td><code>DECIMAL</code></td><td>Aceito, mas armazenado como número real. No SQL Server o DECIMAL é exato.</td></tr>
+            </tbody></table></div>
+          <h3 class="h5 mt-4">Comandos do terminal</h3>
+          <div class="tbl-wrap"><table class="tbl"><tbody>
+            <tr><td><code>help</code></td><td>lista os comandos</td></tr>
+            <tr><td><code>clear</code> / <code>cls</code></td><td>limpa a tela</td></tr>
+            <tr><td><code>tables</code></td><td>mesmo que sp_tables</td></tr>
+            <tr><td><code>desc Tabela</code></td><td>mesmo que sp_help Tabela</td></tr>
+            <tr><td><code>history</code></td><td>últimos comandos executados</td></tr>
+            <tr><td><code>reset</code></td><td>restaura o banco original</td></tr>
+          </tbody></table></div>
+        </div>
+
+        <div class="ref-section" id="r-checklist">
+          <h2>Checklist de revisão para prova</h2>
+          <p class="lede mb-3">Tente responder antes de abrir.</p>
+          <div class="d-grid gap-2" id="checklist"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= OFFCANVAS / MODAIS ================= -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="ocExplorer" aria-labelledby="ocExplorerLbl">
+  <div class="offcanvas-header"><h2 class="h5 mb-0" id="ocExplorerLbl">Pesquisador de Objetos</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button></div>
+  <div class="offcanvas-body explorer" id="explorerMobile"></div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="ocSnippets" aria-labelledby="ocSnipLbl">
+  <div class="offcanvas-header"><h2 class="h5 mb-0" id="ocSnipLbl">Biblioteca de comandos</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button></div>
+  <div class="offcanvas-body" id="snippetList"></div>
+</div>
+
+<div class="modal fade" id="modalExport" tabindex="-1" aria-labelledby="mExpLbl" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h2 class="modal-title h5" id="mExpLbl">Gerar scripts (como no SSMS)</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+      <div class="modal-body">
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-2">
+          <label class="d-flex gap-2 align-items-center"><input type="radio" name="expMode" value="ddl" checked id="expDdl"> Somente esquema (DDL)</label>
+          <label class="d-flex gap-2 align-items-center"><input type="radio" name="expMode" value="all" id="expAll"> Esquema e dados</label>
+        </div>
+        <pre class="code" id="exportCode" style="max-height:60vh"></pre>
+      </div>
+      <div class="modal-footer">
+        <span class="me-auto small text-muted-2">Tabelas pai primeiro, depois as filhas.</span>
+        <button class="btn-ghost" type="button" id="btnExpTerm">Abrir no terminal</button>
+        <button class="btn-lab" type="button" id="btnExpCopy">Copiar script</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDownload" tabindex="-1" aria-labelledby="mDlLbl" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div><h2 class="modal-title h5 mb-0" id="mDlLbl">Levar o banco para uma ferramenta</h2><div class="small text-muted-2">Os arquivos são gerados agora, a partir do banco do laboratório.</div></div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <fieldset class="dl-state mb-3">
+          <legend class="eyebrow mb-2">Qual versão do banco?</legend>
+          <label class="dl-radio"><input type="radio" name="dlState" value="orig" id="dlOrig" checked><span><b>Banco original</b><small>Como veio no laboratório: 7 tabelas e dados de exemplo.</small></span></label>
+          <label class="dl-radio"><input type="radio" name="dlState" value="atual" id="dlAtual"><span><b>Estado atual</b><small>Inclui as tabelas, procedures e dados que você criou ou alterou no terminal.</small></span></label>
+        </fieldset>
+        <div class="dl-grid" id="dlGrid"></div>
+        <p class="small text-muted-2 mt-3 mb-0" id="dlNote">Se o download não começar (alguns visualizadores bloqueiam downloads), use <b>Copiar script</b> e cole no editor da ferramenta.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalReset" tabindex="-1" aria-labelledby="mResetLbl" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title h5" id="mResetLbl">Restaurar banco original?</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+    <div class="modal-body">Todas as tabelas, procedures e dados que você criou ou alterou serão descartados. O progresso das missões e do quiz é mantido.</div>
+    <div class="modal-footer"><button class="btn-ghost" type="button" data-bs-dismiss="modal">Cancelar</button><button class="btn-lab" type="button" id="btnResetOk" style="background:var(--bad);color:#fff">Restaurar banco</button></div>
+  </div></div>
+</div>
+
+<input type="file" id="fileSql" accept=".sql,.txt" hidden>
+
+<script src="vendor/bootstrap.bundle.min.js"></script>
+<script src="vendor/sql-wasm.js"></script>
+<script src="vendor/sql-wasm-binary.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/MotionPathPlugin.min.js"></script>
+<script src="js/home.js"></script>
+<script src="js/tutorial.js"></script>
+<script src="js/downloads.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
